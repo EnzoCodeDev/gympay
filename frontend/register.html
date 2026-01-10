@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>GymPay - Registro (Simulación)</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">GymPay</div>
+
+      <nav>
+        <a href="admin.html">Panel</a>
+        <a href="clients.html">Clientes</a>
+        <a href="memberships.html">Membresías</a>
+        <a href="payments.html">Pagos</a>
+        <a href="reports.html">Reportes</a>
+        <a href="history.html">Historial</a>
+        <a href="notifications.html">Notificaciones</a>
+        <a href="invoices.html">Facturas</a>
+        <a href="plans.html">Planes</a>
+        <a href="attendance.html">Asistencia</a>
+        <a href="access_control.html">Control de acceso</a>
+        <a href="index.html">Salir</a>
+      </nav>
+    </header>
+    <main class="container">
+      <div class="grid">
+        <div class="card">
+          <h2>Registro de usuario</h2>
+          <form id="registerForm">
+            <label>Nombre completo</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Nombre y apellidos"
+              required
+            />
+
+            <label>Correo</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="tucorreo@ejemplo.com"
+              required
+            />
+
+            <label>Contraseña</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="********"
+              required
+            />
+
+            <button type="submit">Crear cuenta</button>
+            <p class="muted" style="margin-top: 8px">
+              Al registrarte serás redirigido al panel principal.
+            </p>
+          </form>
+        </div>
+      </div>
+    </main>
+    <footer>
+      Maqueta generada a partir del documento de requerimientos. Abrir
+      <strong>index.html</strong> para iniciar.
+    </footer>
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
