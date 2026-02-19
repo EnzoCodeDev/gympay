@@ -1,53 +1,125 @@
-import { Users, DollarSign, CalendarCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, DollarSign, CalendarCheck, ArrowUpRight } from "lucide-react";
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    clients: 0,
+    revenue: 0,
+    attendance: 0,
+    recentActivity: [] as any[],
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [clients, payments, attendance] = await Promise.all([
+          fetch("http://localhost:3000/api/clients").then((r) => r.json()),
+          fetch("http://localhost:3000/api/payments").then((r) => r.json()),
+          fetch("http://localhost:3000/api/attendance").then((r) => r.json()),
+        ]);
+
+        // Aggregate activity
+        const activities = [
+          ...clients
+            .slice(0, 5)
+            .map((c: any) => ({
+              user: c.name,
+              action: "Registro Nuevo",
+              date: c.created_at,
+              status: "Nuevo",
+              type: "blue",
+            })),
+          ...payments
+            .slice(0, 5)
+            .map((p: any) => ({
+              user: p.client_name,
+              action: "Pago de Membresía",
+              date: p.payment_date,
+              status: "Completado",
+              type: "green",
+            })),
+          ...attendance
+            .slice(0, 5)
+            .map((a: any) => ({
+              user: a.client_name,
+              action: "Ingreso al Gimnasio",
+              date: a.check_in,
+              status: "Presente",
+              type: "purple",
+            })),
+        ]
+          .sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+          )
+          .slice(0, 8);
+
+        setStats({
+          clients: clients.length,
+          revenue: payments.reduce((acc: number, p: any) => acc + p.amount, 0),
+          attendance: attendance.filter(
+            (a: any) =>
+              new Date(a.check_in).toDateString() === new Date().toDateString(),
+          ).length,
+          recentActivity: activities,
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+
+  const cards = [
+    {
+      title: "Clientes Activos",
+      value: stats.clients,
+      trend: "+12%",
+      icon: Users,
+      color: "text-blue-500",
+      bg: "bg-blue-50",
+    },
+    {
+      title: "Ingresos Totales",
+      value: `$${stats.revenue.toLocaleString()}`,
+      trend: "+8%",
+      icon: DollarSign,
+      color: "text-green-500",
+      bg: "bg-green-50",
+    },
+    {
+      title: "Asistencias Hoy",
+      value: stats.attendance,
+      trend: "Normal",
+      icon: CalendarCheck,
+      color: "text-purple-500",
+      bg: "bg-purple-50",
+    },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium">
-              Clientes Activos
-            </p>
-            <h3 className="text-3xl font-bold text-gray-800 mt-2 font-display">
-              1,240
-            </h3>
-            <span className="text-green-500 text-xs font-semibold bg-green-50 px-2 py-1 rounded-full mt-2 inline-block">
-              +12% este mes
-            </span>
+        {cards.map((card, i) => (
+          <div
+            key={i}
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between"
+          >
+            <div>
+              <p className="text-gray-500 text-sm font-medium">{card.title}</p>
+              <h3 className="text-3xl font-bold text-gray-800 mt-2 font-display">
+                {card.value}
+              </h3>
+              <span
+                className={`text-${card.trend.includes("+") ? "green" : "gray"}-500 text-xs font-semibold bg-${card.trend.includes("+") ? "green" : "gray"}-50 px-2 py-1 rounded-full mt-2 inline-block`}
+              >
+                {card.trend}
+              </span>
+            </div>
+            <div className={`p-4 ${card.bg} ${card.color} rounded-full`}>
+              <card.icon size={24} />
+            </div>
           </div>
-          <div className="p-4 bg-blue-50 text-blue-500 rounded-full">
-            <Users size={24} />
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium">
-              Ingresos Mensuales
-            </p>
-            <h3 className="text-3xl font-bold text-gray-800 mt-2">$42.5k</h3>
-            <span className="text-green-500 text-xs font-semibold bg-green-50 px-2 py-1 rounded-full mt-2 inline-block">
-              +8% vs mes anterior
-            </span>
-          </div>
-          <div className="p-4 bg-green-50 text-green-500 rounded-full">
-            <DollarSign size={24} />
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Asistencias Hoy</p>
-            <h3 className="text-3xl font-bold text-gray-800 mt-2">145</h3>
-            <span className="text-gray-400 text-xs font-semibold mt-2 inline-block">
-              Promedio: 180
-            </span>
-          </div>
-          <div className="p-4 bg-purple-50 text-purple-500 rounded-full">
-            <CalendarCheck size={24} />
-          </div>
-        </div>
+        ))}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -55,7 +127,7 @@ export default function Dashboard() {
           <h2 className="text-lg font-bold text-gray-800">
             Actividad Reciente
           </h2>
-          <button className="text-primary text-sm font-medium hover:underline">
+          <button className="text-primary-600 text-sm font-medium hover:underline">
             Ver todo
           </button>
         </div>
@@ -70,51 +142,43 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
-              <tr className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 font-medium flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                    JP
-                  </div>
-                  Juan Pérez
-                </td>
-                <td className="px-6 py-4">Pago de Membresía</td>
-                <td className="px-6 py-4 text-gray-500">Hoy, 10:23 AM</td>
-                <td className="px-6 py-4">
-                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                    Completado
-                  </span>
-                </td>
-              </tr>
-              <tr className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 font-medium flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">
-                    MG
-                  </div>
-                  Maria Garcia
-                </td>
-                <td className="px-6 py-4">Registro Nuevo</td>
-                <td className="px-6 py-4 text-gray-500">Ayer, 4:15 PM</td>
-                <td className="px-6 py-4">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                    Nuevo
-                  </span>
-                </td>
-              </tr>
-              <tr className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 font-medium flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
-                    CR
-                  </div>
-                  Carlos Ruiz
-                </td>
-                <td className="px-6 py-4">Intento de Acceso</td>
-                <td className="px-6 py-4 text-gray-500">Ayer, 2:30 PM</td>
-                <td className="px-6 py-4">
-                  <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                    Denegado
-                  </span>
-                </td>
-              </tr>
+              {stats.recentActivity.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-10 text-center text-gray-400 italic"
+                  >
+                    No hay actividad reciente
+                  </td>
+                </tr>
+              ) : (
+                stats.recentActivity.map((act, i) => (
+                  <tr key={i} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-full bg-${act.type}-100 text-${act.type}-600 flex items-center justify-center font-bold text-xs`}
+                      >
+                        {act.user?.charAt(0) || "U"}
+                      </div>
+                      {act.user}
+                    </td>
+                    <td className="px-6 py-4">{act.action}</td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {new Date(act.date).toLocaleString([], {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2 py-1 bg-${act.status === "Completado" || act.status === "Presente" ? "green" : "blue"}-100 text-${act.status === "Completado" || act.status === "Presente" ? "green" : "blue"}-700 rounded-full text-xs font-medium`}
+                      >
+                        {act.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

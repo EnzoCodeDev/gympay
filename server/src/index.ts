@@ -5,12 +5,25 @@ import { authRoutes } from "./routes/auth";
 import { clientsRoutes } from "./routes/clients";
 import { plansRoutes } from "./routes/plans";
 import { membershipsRoutes } from "./routes/memberships";
+import { paymentsRoutes } from "./routes/payments";
+import { attendanceRoutes } from "./routes/attendance";
+import { notificationsRoutes } from "./routes/notifications";
+import { invoicesRoutes } from "./routes/invoices";
+import { settingsRoutes } from "./routes/settings";
 
 const app = new Elysia()
   .use(cors())
   .use(authRoutes)
   .group("/api", (app) =>
-    app.use(clientsRoutes).use(plansRoutes).use(membershipsRoutes),
+    app
+      .use(clientsRoutes)
+      .use(plansRoutes)
+      .use(membershipsRoutes)
+      .use(paymentsRoutes)
+      .use(attendanceRoutes)
+      .use(notificationsRoutes)
+      .use(invoicesRoutes)
+      .use(settingsRoutes),
   )
   // Serve React Build (Optional for Dev, needed for Prod)
   .use(

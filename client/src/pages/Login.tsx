@@ -3,8 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Dumbbell } from "lucide-react";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@gympay.com");
+  const [password, setPassword] = useState("adminpassword");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();

@@ -58,4 +58,35 @@ db.run(`
     FOREIGN KEY (client_id) REFERENCES clients(id),
     FOREIGN KEY (membership_id) REFERENCES memberships(id)
   );
+
+  CREATE TABLE IF NOT EXISTS attendance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL,
+    check_in DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES clients(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS invoices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payment_id INTEGER NOT NULL,
+    invoice_number TEXT UNIQUE NOT NULL,
+    issue_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (payment_id) REFERENCES payments(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES clients(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
