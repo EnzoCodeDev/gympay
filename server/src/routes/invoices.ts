@@ -15,6 +15,22 @@ export const invoicesRoutes = new Elysia({ prefix: "/invoices" })
       )
       .all();
   })
+  .get("/:id", ({ params }) => {
+    return db
+      .query(
+        `
+      SELECT 
+        i.*, 
+        p.amount, p.method, p.payment_date, p.reference,
+        c.name as client_name, c.dni as client_dni, c.email as client_email, c.phone as client_phone
+      FROM invoices i
+      JOIN payments p ON i.payment_id = p.id
+      JOIN clients c ON p.client_id = c.id
+      WHERE i.id = ?
+    `,
+      )
+      .get(params.id);
+  })
   .post(
     "/",
     ({ body }) => {

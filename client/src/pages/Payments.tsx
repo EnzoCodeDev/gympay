@@ -17,6 +17,7 @@ interface Payment {
   payment_date: string;
   method: string;
   reference: string | null;
+  invoice_number?: string;
 }
 
 interface Client {
@@ -141,6 +142,9 @@ export default function Payments() {
                   Método
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Factura
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Referencia
                 </th>
               </tr>
@@ -183,6 +187,17 @@ export default function Payments() {
                       <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
                         {payment.method}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {payment.invoice_number ? (
+                        <span className="font-mono text-xs font-bold text-primary-700 bg-primary-50 px-2 py-1 rounded">
+                          {payment.invoice_number}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">
+                          Sin factura
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-gray-500 text-sm">
                       {payment.reference || "-"}

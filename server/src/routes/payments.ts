@@ -6,9 +6,10 @@ export const paymentsRoutes = new Elysia({ prefix: "/payments" })
     return db
       .query(
         `
-      SELECT p.*, c.name as client_name 
+      SELECT p.*, c.name as client_name, i.invoice_number
       FROM payments p 
       JOIN clients c ON p.client_id = c.id 
+      LEFT JOIN invoices i ON i.payment_id = p.id
       ORDER BY p.payment_date DESC
     `,
       )
@@ -17,17 +18,30 @@ export const paymentsRoutes = new Elysia({ prefix: "/payments" })
   .post(
     "/",
     ({ body }) => {
-      const result = db
-        .query(
-          "INSERT INTO payments (client_id, membership_id, amount, method, reference) VALUES (?, ?, ?, ?, ?) RETURNING *",
-        )
-        .get(
-          body.client_id,
-          body.membership_id || null,
-          body.amount,
-          body.method,
-          body.reference || null,
-        );
+      const createTransaction = db.transaction((data: any) => {
+        // 1. Insertar el pago
+        const payment = db
+          .query(
+            "INSERT INTO payments (client_id, membership_id, amount, method, reference) VALUES (?, ?, ?, ?, ?) RETURNING *",
+          )
+          .get(
+            data.client_id,
+            data.membership_id || null,
+            data.amount,
+            data.method,
+            data.reference || null,
+          ) as any;
+
+        // 2. Generar factura básica automáticamente
+        const invoiceNumber = `FAC-${payment.id.toString().padStart(5, "0")}`;
+        db.query(
+          "INSERT INTO invoices (payment_id, invoice_number, total) VALUES (?, ?, ?)",
+        ).run(payment.id, invoiceNumber, payment.amount);
+
+        return payment;
+      });
+
+      const result = createTransaction(body);
       return { success: true, data: result };
     },
     {
